@@ -145,6 +145,10 @@ export interface MicroarchDef {
   wires: WireDef[];
   phases: PhaseDef[];
   stages?: StageDef[];
+  /** Управляющий автомат (многотактный процессор) — для окна Control Unit. */
+  fsm?: { signal: SignalId; states: { name: string; outputs: string; next: string }[] };
+  /** Подсказка под цепочкой этапов в верхней панели (для архитектур без стадий). */
+  hint?: string;
   /** Заглушка (ещё не реализована). */
   stub?: boolean;
   /** Свободные текстовые подписи на схеме. */
@@ -229,6 +233,15 @@ export interface TraceStep {
   /** Изменённые на этом шаге регистр/ячейка (для подсветки в панели состояния). */
   changedReg?: number;
   changedMem?: number;
+  /**
+   * Прогресс инструкции для архитектур без стадий конвейера: цепочка этапов
+   * (фазы такта в однотактном, состояния FSM в многотактном) и номер текущего.
+   */
+  progress?: { labels: string[]; current: number };
+  /** Текст значка фазы в верхней панели (по умолчанию — PhaseDef.label). */
+  badge?: string;
+  /** Короткая метка ячейки таймлайна (по умолчанию — PhaseDef.short). */
+  tick?: string;
   /** Блоки-регистры, защёлкивающие значение на этом шаге (фронт CLK). */
   latching?: BlockId[];
   /** Блоки-регистры, удерживаемые (stall) / сбрасываемые (flush). */

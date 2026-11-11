@@ -30,7 +30,7 @@ export class Narration {
     const phase = this.def.phases.find((p) => p.id === step.phase);
     this.title.append(
       h('span', { class: 'badge cyc', text: `Такт ${step.cycle}` }),
-      h('span', { class: `badge ph ph-${step.phase}`, text: phase?.label ?? step.phase }),
+      h('span', { class: `badge ph ph-${step.phase}`, text: step.badge ?? phase?.label ?? step.phase }),
     );
     this.what.textContent = step.what;
     clear(this.why);
@@ -52,15 +52,18 @@ export class Narration {
     } else {
       // однотактный: одна инструкция, прогресс по фазам
       const slot = Object.values(step.stages)[0];
-      const cur = this.def.phases.findIndex((p) => p.id === step.phase);
+      const prog = step.progress ?? {
+        labels: this.def.phases.map((p) => p.label.split(' — ')[0]),
+        current: this.def.phases.findIndex((p) => p.id === step.phase),
+      };
       const bar = h('div', { class: 'ph-bar' });
-      this.def.phases.forEach((p, i) => {
-        bar.append(h('span', { class: `ph-chip${i === cur ? ' cur' : i < cur ? ' done' : ''}`, text: p.label.split(' — ')[0] }));
+      prog.labels.forEach((lbl, i) => {
+        bar.append(h('span', { class: `ph-chip${i === prog.current ? ' cur' : i < prog.current ? ' done' : ''}`, text: lbl }));
       });
       this.stages.append(
         h('div', { class: 'sc-instr' }, h('span', { class: 'sc-cap', text: 'Инструкция:' }), h('code', { text: slot?.text ?? '—' })),
         bar,
-        h('div', { class: 'sc-hint', text: 'Весь путь инструкции укладывается в один такт; фазы показывают, как сигнал распространяется по комбинационной логике.' }),
+        h('div', { class: 'sc-hint', text: this.def.hint ?? '' }),
       );
     }
   }

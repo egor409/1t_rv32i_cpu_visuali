@@ -10,6 +10,10 @@ export class Memory {
   read(addr: number): number {
     return this.m.get(u32(addr) & ~3) ?? 0;
   }
+  /** Значение ячейки или undefined, если в неё ещё не писали. */
+  get(addr: number): number | undefined {
+    return this.m.get(u32(addr) & ~3);
+  }
   write(addr: number, v: number) {
     this.m.set(u32(addr) & ~3, u32(v));
   }

@@ -65,13 +65,14 @@ export class Player {
         lastCycle = st.cycle;
         cells = h('div', { class: 'tl-cells' });
         cur = h('div', { class: 'tl-cycle' }, h('div', { class: 'tl-cnum', text: String(st.cycle) }), cells);
+        if (st.progress?.current === 0 && i > 0) cur.classList.add('istart');
         this.track.append(cur);
         this.cycleEls.push(cur);
       }
       const ph = def.phases.find((p) => p.id === st.phase);
       const kinds = new Set(st.events.map((e) => e.kind));
       const mark = kinds.has('flush') ? 'flush' : kinds.has('stall') ? 'stall' : kinds.has('forward') ? 'forward' : '';
-      const cell = h('div', { class: `tl-cell ph-${st.phase}${mark ? ' m-' + mark : ''}`, 'data-i': i, title: `${st.title}` }, h('span', { text: ph?.short ?? '' }));
+      const cell = h('div', { class: `tl-cell ph-${st.phase}${mark ? ' m-' + mark : ''}`, 'data-i': i, title: `${st.title}` }, h('span', { text: st.tick ?? ph?.short ?? '' }));
       cells!.append(cell);
       this.cells.push(cell);
     });

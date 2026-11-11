@@ -3,6 +3,8 @@ import { assemble } from '../src/isa/assembler';
 import { disasm, extend } from '../src/isa/rv32i';
 import { simulateSingle } from '../src/arch/riscv-single/engine';
 import { simulatePipelined } from '../src/arch/riscv-pipelined/engine';
+import { simulateMulticycle, stateSequence } from '../src/arch/riscv-multicycle/engine';
+import { OP } from '../src/isa/rv32i';
 import { EXAMPLES, exampleById } from '../src/programs/examples';
 
 const src = (id: string) => exampleById(id)!.source;
@@ -88,5 +90,38 @@ describe('pipelined', () => {
     const r = last(t.steps).regs;
     expect([r[5], r[6], r[7], r[8], r[9]]).toEqual([0, 0, 0, 10, 11]);
     expect(t.pipeline!.filter((x) => Object.values(x.cells).some((c) => c.mark === 'flush')).length).toBe(2);
+  });
+});
+
+describe('multicycle', () => {
+  it('matches single-cycle on every example', () => {
+    for (const e of EXAMPLES) {
+      const p = assemble(e.source);
+      const a = last(simulateSingle(p).steps);
+      const b = last(simulateMulticycle(p).steps);
+      expect(b.regs, e.id).toEqual(a.regs);
+      expect(b.mem, e.id).toEqual(a.mem);
+    }
+  });
+  it('takes the number of cycles from the book: lw 5, sw 4, R/I 4, beq 3, jal 4', () => {
+    expect(stateSequence(OP.LW).length).toBe(5);
+    expect(stateSequence(OP.SW).length).toBe(4);
+    expect(stateSequence(OP.R).length).toBe(4);
+    expect(stateSequence(OP.I).length).toBe(4);
+    expect(stateSequence(OP.BEQ).length).toBe(3);
+    expect(stateSequence(OP.JAL).length).toBe(4);
+    expect(simulateMulticycle(assemble(src('lw'))).cycles).toBe(5);
+    expect(simulateMulticycle(assemble(src('sw'))).cycles).toBe(4);
+  });
+  it('fetch: PC+4 is computed by the ALU and written to PC; IR latches the instruction', () => {
+    const t = simulateMulticycle(assemble(src('lw')));
+    const f = t.steps[0];
+    expect([f.values.State, f.values.ALUResult, f.values.PCWrite, f.values.IRWrite]).toEqual([0, 4, 1, 1]);
+    const d = t.steps[2];
+    expect([d.values.State, d.values.PC, d.values.OldPC, d.values.Instr >>> 0]).toEqual([1, 4, 0, 0xffc4a303]);
+  });
+  it('jal writes the return address and jumps', () => {
+    const r = last(simulateMulticycle(assemble(src('jal'))).steps).regs;
+    expect([r[1], r[5], r[6]]).toEqual([4, 0, 2]);
   });
 });

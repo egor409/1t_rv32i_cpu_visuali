@@ -1543,3 +1543,26 @@ th.pd-c.cur {
   background: #d3f0da;
   font-weight: 700;
 }
+
+.a-table.fsm td {
+  font-size: 10px;
+  vertical-align: top;
+}
+.a-table.fsm td.wrapc {
+  white-space: normal;
+  color: #45525f;
+}
+.a-table.fsm tr.cur td.wrapc {
+  color: #7a3505;
+}
+.a-msep {
+  font: 600 9.5px var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 1px 5px;
+  background: #f4f5f7;
+}
+.tl-cycle.istart {
+  margin-left: 5px;
+}

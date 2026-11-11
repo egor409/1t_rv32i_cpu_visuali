@@ -49,6 +49,9 @@ export function renderAnim(b: BlockDef, io: BlockIO, step: TraceStep | null, tra
   switch (b.anim ?? b.type) {
     case 'mux': return animMux(c);
     case 'pc': return animPC(c);
+    case 'reg': return animReg(c);
+    case 'fsm': return animFSM(c);
+    case 'umem': return animUMem(c);
     case 'alu': return animALU(c);
     case 'adder': return animAdder(c);
     case 'regfile': return animRegFile(c);
@@ -209,6 +212,141 @@ function animPC(c: Ctx): Element {
   else if (next === undefined) msg = `${c.name(dSig)} ещё не вычислен в этой фазе: сначала должен определиться ${c.name(m.selSig)}.`;
   else msg = `Мультиплексор выбирает ${c.name(m.ins[m.sel ?? 0]?.signal)} (${c.name(m.selSig)} = ${c.val(m.selSig)}); по фронту CLK регистр защёлкивает ${c.name(dSig)}: PC ${c.val(qSig)} → ${fmtNum(next, c.fmt)}.`;
   return wrap(svg, note(msg));
+}
+
+/* ------------------------------------------------------------------ */
+/*  Обычный регистр (с разрешением записи или без)                    */
+/* ------------------------------------------------------------------ */
+
+function animReg(c: Ctx): Element {
+  const dSig = c.sig('d');
+  const qSig = c.sig('q');
+  const enSig = c.sig('en');
+  const cur = c.num('q');
+  const next = c.num('d');
+  // у Stall-сигналов (Hazard Unit) разрешение инверсное: Stall=1 → EN=0
+  const inverted = enSig ? c.def.signals[enSig]?.kind === 'hazard' : false;
+  const enRaw = enSig ? c.step?.values[enSig] : undefined;
+  const en = enSig ? (enRaw === undefined ? undefined : inverted ? !enRaw : !!enRaw) : true;
+  const svg = svgBox(150);
+  const DUR = 3.2;
+  const EDGE = 0.55;
+  const title = c.b.label.replace(/\n/g, '');
+
+  svg.append(line('8,56 140,56', next !== undefined ? 'on' : ''));
+  svg.append(text(10, 50, c.name(dSig), 'on'));
+  svg.append(text(10, 72, c.val(dSig), 'mono on'));
+  svg.append(s('rect', { class: 'a-shape', x: 140, y: 26, width: 60, height: 60, rx: 4 }));
+  svg.append(text(170, 54, title, 'bold', 'middle'));
+  svg.append(s('polyline', { class: 'a-clk', points: '160,86 170,75 180,86' }));
+  if (enSig) {
+    svg.append(line('170,6 170,26', 'ctl'));
+    svg.append(text(176, 14, `${c.name(enSig)} = ${c.val(enSig)}`, 'ctl'));
+    svg.append(text(170, 68, `EN=${en === undefined ? '?' : en ? 1 : 0}`, en === false ? 'bad tiny' : 'tiny', 'middle'));
+  }
+  svg.append(line(`200,56 ${W - 6},56`, 'on'));
+  svg.append(text(208, 50, c.name(qSig), 'on'));
+  const canLatch = next !== undefined && en === true;
+  const qOld = text(208, 72, cur !== undefined ? fmtSignal(qSig ?? '', c.def.signals[qSig ?? ''], cur, c.fmt) : '?', 'mono on');
+  svg.append(qOld);
+  if (canLatch) {
+    const qNew = text(208, 72, fmtSignal(qSig ?? '', c.def.signals[qSig ?? ''], next, c.fmt), 'mono ok');
+    qNew.setAttribute('opacity', '0');
+    qOld.append(anim('opacity', '1;0;0', `0;${EDGE};1`, DUR));
+    qNew.append(anim('opacity', '0;1;1', `0;${EDGE};1`, DUR));
+    svg.append(qNew);
+    const flash = s('rect', { class: 'a-flash', x: 140, y: 26, width: 60, height: 60, rx: 4, opacity: 0 });
+    flash.append(anim('opacity', '0;0.7;0.35;0', `0;${EDGE};${EDGE + 0.12};${EDGE + 0.3}`, DUR));
+    svg.append(flash);
+    svg.append(dot('M8,56 L140,56', DUR, EDGE - 0.08));
+  }
+  const x0 = 30;
+  const x1 = W - 10;
+  const xe = x0 + (x1 - x0) * EDGE;
+  svg.append(text(4, 130, 'CLK', 'tiny'));
+  svg.append(s('polyline', { class: 'a-clkwave', points: `${x0},132 ${xe},132 ${xe},110 ${x1},110` }));
+  const marker = s('line', { class: 'a-marker', x1: x0, x2: x0, y1: 102, y2: 140 });
+  const mv = `${x0};${x1}`;
+  marker.append(
+    s('animate', { attributeName: 'x1', values: mv, dur: `${DUR}s`, repeatCount: 'indefinite' }),
+    s('animate', { attributeName: 'x2', values: mv, dur: `${DUR}s`, repeatCount: 'indefinite' }),
+  );
+  svg.append(marker);
+  svg.append(text(xe + 4, 106, 'фронт ↑', 'tiny ok'));
+
+  let msg: string;
+  if (en === undefined) msg = `${c.name(enSig)} ещё не определён в этой фазе.`;
+  else if (!en) msg = `EN = 0 (${c.name(enSig)} = ${c.val(enSig)}): по фронту CLK регистр не обновляется и удерживает ${c.val(qSig)}.`;
+  else if (next === undefined) msg = `${c.name(dSig)} ещё не вычислен в этой фазе.`;
+  else msg = `${enSig ? `EN = 1 (${c.name(enSig)} = ${c.val(enSig)}): по` : 'Разрешения записи нет — по каждому'} фронту CLK регистр защёлкивает ${c.name(dSig)}: ${c.val(qSig)} → ${c.val(dSig)}.`;
+  return wrap(svg, note(msg));
+}
+
+/* ------------------------------------------------------------------ */
+/*  Управляющий автомат (многотактный процессор)                      */
+/* ------------------------------------------------------------------ */
+
+function animFSM(c: Ctx): Element {
+  const fsm = c.def.fsm;
+  if (!fsm) return animControl(c);
+  const cur = c.step?.values[fsm.signal];
+  const v = c.step?.values ?? {};
+  const tbl = h('table', { class: 'a-table fsm' });
+  tbl.append(h('tr', {}, h('th', { text: 'состояние' }), h('th', { text: 'выходы' }), h('th', { text: 'далее' })));
+  fsm.states.forEach((st, i) => {
+    tbl.append(h('tr', { class: i === cur ? 'cur' : '' }, h('td', { text: st.name }), h('td', { class: 'wrapc', text: st.outputs }), h('td', { class: 'wrapc', text: st.next })));
+  });
+  const eq = h('div', { class: 'a-eq' }, h('b', { text: 'PCWrite = ' }));
+  eq.append(term(`PCUpdate=${v.PCUpdate ?? '?'}`, !!v.PCUpdate), ' | ( ', term(`Branch=${v.Branch ?? '?'}`, !!v.Branch), ' & ', term(`Zero=${v.Zero ?? '?'}`, !!v.Zero), ' )');
+  eq.append(h('span', { class: 'a-res', text: ` → ${v.PCWrite ?? '?'}` }));
+  const aluOp = v.ALUOp;
+  const ac = v.ALUControl;
+  return wrap(
+    h('div', { class: 'a-cap', text: 'Main FSM: один такт — одно состояние' }),
+    tbl,
+    h('div', { class: 'a-block' }, eq),
+    aluOp !== undefined && ac !== undefined
+      ? note(`ALU Decoder: ALUOp = ${aluOp.toString(2).padStart(2, '0')} → ALUControl = ${ac.toString(2).padStart(3, '0')} (${ALU_CTRL_NAME[ac] ?? '?'}).`)
+      : null,
+    note(`Instr Decoder: ImmSrc = ${c.val('ImmSrc')} (${IMM_SRC_NAME[v.ImmSrc ?? 0]}) — определяется по op, от состояния не зависит.`),
+    note('Не указанные в состоянии выходы равны 0 (в книге — don\'t care для селекторов).', 'dim'),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Общая память команд и данных (многотактный процессор)             */
+/* ------------------------------------------------------------------ */
+
+function animUMem(c: Ctx): Element {
+  const a = c.num('A');
+  const we = c.num('WE');
+  const addr = a !== undefined ? u32(a) & ~3 : undefined;
+  const writing = !!we;
+  const list = h('div', { class: 'a-mem' });
+  const mem = c.step?.mem ?? {};
+  list.append(h('div', { class: 'a-msep', text: 'команды' }));
+  for (const ins of c.trace.program.instrs) {
+    if (ins.addr in mem) continue; // ячейку перезаписали данными — покажем ниже
+    const cur = ins.addr === addr;
+    list.append(
+      h('div', { class: `a-mrow${cur ? (writing ? ' wr' : ' cur') : ''}` }, h('span', { class: 'ptr', text: cur ? '▶' : '' }), h('span', { class: 'ad', text: fmtNum(ins.addr, 'hex', 2) }), h('code', { text: fmtNum(ins.word, 'hex', 8) }), h('span', { class: 'tx', text: ins.text })),
+    );
+  }
+  list.append(h('div', { class: 'a-msep', text: 'данные' }));
+  const entries = Object.entries(mem);
+  if (!entries.length) list.append(h('div', { class: 'a-mrow', text: 'обращений ещё не было' }));
+  for (const [ad, val] of entries) {
+    const cur = Number(ad) === addr;
+    list.append(
+      h('div', { class: `a-mrow${cur ? (writing ? ' wr' : ' cur') : ''}` }, h('span', { class: 'ptr', text: cur ? (writing ? '✎' : '▶') : '' }), h('span', { class: 'ad', text: `[${fmtNum(Number(ad), 'hex', 4)}]` }), h('code', { text: fmtNum(val, c.fmt) })),
+    );
+  }
+  const adrSrc = c.step?.values.AdrSrc;
+  let msg: string;
+  if (a === undefined) msg = 'Адрес ещё не подан.';
+  else if (writing) msg = `MemWrite = 1: по фронту CLK  Mem[${c.val(c.sig('A'))}] ← WD = ${c.val(c.sig('WD'))}.`;
+  else msg = `A = ${c.val(c.sig('A'))} (${adrSrc ? 'AdrSrc=1: адрес данных из Result' : 'AdrSrc=0: адрес команды из PC'}) → RD = ${c.val(c.sig('RD'))}.`;
+  return wrap(list, note(msg), note('Память одна на команды и данные — поэтому перед её адресным входом стоит мультиплексор.', 'dim'));
 }
 
 /* ------------------------------------------------------------------ */
