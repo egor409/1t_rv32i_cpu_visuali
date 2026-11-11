@@ -20,7 +20,7 @@ import { Player } from './ui/timeline';
 const LAYERS = [
   { id: 'names', label: 'Подписи сигналов' },
   { id: 'values', label: 'Значения шин' },
-  { id: 'control', label: 'Управляющие сигналы' },
+  { id: 'control', label: 'Упр. сигналы' },
   { id: 'path', label: 'Подсветка пути' },
   { id: 'explain', label: 'Пояснения' },
   { id: 'pipeline', label: 'Pipeline diagram' },
@@ -63,6 +63,7 @@ const state = {
 function persist() {
   try {
     localStorage.setItem('rvviz', JSON.stringify({ layers: state.layers, fmt: state.fmt }));
+    if (state.customSource) localStorage.setItem('rvviz-src', state.customSource);
   } catch {
     /* localStorage может быть недоступен */
   }
@@ -87,6 +88,13 @@ const zoomBox = h(
   h('button', { text: '−', title: 'Уменьшить', onclick: () => schematic?.zoom(0.8) }),
   h('button', { text: '⤢', title: 'Вписать (двойной клик)', onclick: () => schematic?.fit() }),
 );
+const legend = h('div', {
+  class: 'legend',
+  html:
+    '<span><i class="lg-data"></i>данные</span><span><i class="lg-ctl"></i>управление</span><span class="lg-hzs"><i class="lg-hz"></i>Hazard Unit</span>' +
+    '<span><i class="lg-on"></i>активный путь</span><span><i class="lg-fresh"></i>текущая фаза</span>',
+  title: 'Клик по блоку — детали · колесо мыши — масштаб · ←/→ — шаг · пробел — пуск',
+});
 const tip = h('div', { class: 'tip hidden' });
 const warnBox = h('div', { class: 'warn hidden' });
 const center = h('div', { class: 'center' });
@@ -106,6 +114,7 @@ const player = new Player({
 const editor = new Editor((p) => {
   state.customSource = p.source;
   state.exampleId = null;
+  persist();
   setProgram(p);
   fillPrograms();
 });
@@ -125,7 +134,7 @@ app.append(
     fmtBtn,
     presBtn,
   ),
-  h('div', { class: 'toolbar' }, h('span', { class: 'cap', text: 'Слои:' }), layerBox),
+  h('div', { class: 'toolbar' }, h('span', { class: 'cap', text: 'Слои:' }), layerBox, h('div', { class: 'spacer' }), legend),
   narrHost,
   mainEl,
   player.el,
@@ -313,7 +322,7 @@ function render() {
   detail?.update(step, trace, state.fmt);
   fmtBtn.textContent = state.fmt === 'hex' ? 'hex | dec'.replace('hex', 'HEX') : 'hex | DEC';
   const q = new URLSearchParams({ a: state.arch.def.id });
-  if (state.exampleId) q.set('p', state.exampleId);
+  q.set('p', state.exampleId ?? 'custom');
   q.set('s', String(state.idx));
   history.replaceState(null, '', '#' + q.toString());
 }
@@ -399,8 +408,29 @@ window.addEventListener('keydown', (ev) => {
 applyLayers();
 {
   const p = hash.get('p');
+  try {
+    state.customSource = localStorage.getItem('rvviz-src');
+  } catch {
+    /* localStorage может быть недоступен */
+  }
   if (p && exampleById(p)) state.exampleId = p;
-  setArch(state.arch);
+  const wantCustom = p === 'custom' && !!state.customSource;
+  if (!wantCustom) {
+    // своя программа остаётся в списке, но при обычной загрузке открываем пример
+    const keep = state.customSource;
+    state.customSource = null;
+    setArch(state.arch);
+    state.customSource = keep;
+    fillPrograms();
+  } else {
+    try {
+      setArch(state.arch);
+    } catch {
+      // сохранённая программа больше не собирается — показываем пример
+      state.customSource = null;
+      setArch(state.arch);
+    }
+  }
   const s0 = Number(hash.get('s') ?? 0);
   if (s0) seek(s0);
 }

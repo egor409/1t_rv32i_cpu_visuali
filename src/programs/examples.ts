@@ -148,12 +148,12 @@ addi x9, x8, 1       # forward из Memory
     id: 'hazard-mix',
     title: 'Конвейер: всё вместе',
     archs: PIPE,
-    note: 'Комбинация: forwarding, lw-stall и flush при переходе в одной программе (цикл из двух итераций).',
+    note: 'Комбинация: lw-stall, forwarding и flush при переходах в одной программе (цикл из двух итераций).',
     source: `.word 0x40, 2
-lw   x5, 0x40(x0)    # x5 = 2 (счётчик)
 addi x6, x0, 0       # x6 = 0 (сумма)
+lw   x5, 0x40(x0)    # x5 = 2 (счётчик)
 loop:
-beq  x5, x0, done    # lw-stall + forward, затем flush на выходе
+beq  x5, x0, done    # сразу после lw: lw-stall, затем forward из Writeback
 add  x6, x6, x5
 addi x5, x5, -1
 jal  x0, loop        # flush двух инструкций

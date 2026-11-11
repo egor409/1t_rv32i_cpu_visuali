@@ -1566,3 +1566,43 @@ th.pd-c.cur {
 .tl-cycle.istart {
   margin-left: 5px;
 }
+
+/* ---------------- легенда ---------------- */
+.legend {
+  display: flex;
+  gap: 2px 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--muted);
+}
+.legend i {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  vertical-align: 3px;
+  margin-right: 4px;
+  border-top: 2px solid var(--wire);
+}
+.legend i.lg-ctl {
+  border-top: 1.5px dashed #6f93b5;
+}
+.legend i.lg-hz {
+  border-top: 1.5px dashed var(--hz);
+}
+.legend i.lg-on {
+  border-top: 3px solid var(--accent);
+}
+.legend i.lg-fresh {
+  border-top: 3.5px dashed var(--accent);
+}
+.L-explain-off .legend,
+.presentation .legend,
+.no-pipeline .legend .lg-hzs {
+  display: none;
+}
+.no-pipeline .layer:has(#L-pipeline) {
+  opacity: 0.4;
+}
+.warn {
+  bottom: 8px;
+}

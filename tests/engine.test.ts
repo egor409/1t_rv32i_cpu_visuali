@@ -83,6 +83,12 @@ describe('pipelined', () => {
     expect(row.cells[3]).toEqual({ stage: 'D', mark: 'stall' });
     expect(row.cells[4].stage).toBe('D');
   });
+  it('mixed scenario contains stall, forwarding and flush', () => {
+    const t = simulatePipelined(assemble(src('hazard-mix')));
+    const kinds = new Set(t.steps.flatMap((s) => s.events.map((e) => e.kind)));
+    expect(kinds.has('stall') && kinds.has('forward') && kinds.has('flush')).toBe(true);
+    expect(last(t.steps).mem[0x44]).toBe(3);
+  });
   it('branch flush', () => {
     const t = simulatePipelined(assemble(src('branch-flush')));
     const c3 = t.steps.find((s) => s.cycle === 3 && s.phase === 'hazard')!;
