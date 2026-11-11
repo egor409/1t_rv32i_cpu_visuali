@@ -29,6 +29,8 @@ export interface SignalDef {
   label?: string;
   /** Краткое пояснение (тултип). */
   desc?: string;
+  /** Стадия конвейера, к которой относится сигнал (цвет подсветки = цвет инструкции в стадии). */
+  stage?: string;
 }
 
 export type BlockType =
@@ -99,6 +101,8 @@ export interface WireDef {
    * (напр. вход 1 мультиплексора SrcB активен только при ALUSrc=1).
    */
   when?: { signal: SignalId; value: number | number[] };
+  /** Дополнительно требуются активными эти сигналы (напр. провод форвардинга — только если SrcAE используется). */
+  requires?: SignalId[];
   /** Где рисовать подпись/значение: индекс сегмента (по умолчанию — самый длинный). */
   labelSeg?: number;
   /** Смещение подписи относительно середины сегмента. */
@@ -181,6 +185,10 @@ export interface StageSlot {
   status: SlotStatus;
   /** Пометка: "stall", "flush", "forward A←M" … */
   note?: string;
+  /** Что делает стадия в этом такте (одна строка). */
+  detail?: string;
+  /** Уникальный номер динамического экземпляра инструкции (для цвета и pipeline-диаграммы). */
+  uid?: number;
 }
 
 export type EventKind = 'stall' | 'flush' | 'forward' | 'regwrite' | 'memwrite' | 'branch' | 'info';
@@ -197,6 +205,8 @@ export interface TraceStep {
   values: Record<SignalId, number>;
   /** Сигналы на активном пути (подсветка). */
   active: SignalId[];
+  /** Сигналы, вычисленные именно в этой фазе (яркая подсветка). */
+  fresh: SignalId[];
   /** Блоки, работающие в этой фазе. */
   activeBlocks: BlockId[];
   /** Содержимое стадий (single-cycle: одна "стадия"). */
@@ -223,11 +233,18 @@ export interface TraceStep {
 }
 
 /** Строка pipeline-диаграммы: инструкция × такты. */
+export interface PipelineCell {
+  stage: string;
+  /** stall — инструкция задержана в стадии; flush — уничтожена в конце такта. */
+  mark?: 'stall' | 'flush';
+}
+
 export interface PipelineRow {
+  uid: number;
   idx: number;
   text: string;
-  /** cycle → обозначение стадии ('F','D','E','M','W', 'D*' при stall, 'x' при flush). */
-  cells: Record<number, string>;
+  /** cycle → стадия, в которой находится инструкция. */
+  cells: Record<number, PipelineCell>;
 }
 
 export interface Trace {
