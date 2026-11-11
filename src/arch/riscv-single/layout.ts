@@ -139,7 +139,7 @@ const w = wireFactory();
 const TR = 320; // «шина» полей инструкции
 
 const wires = [
-  w('PCNext', 'PCMux.out', 'PC.d', { labelDy: -2 }),
+  w('PCNext', 'PCMux.out', 'PC.d', { labelDy: -2, labelDx: 3 }),
   w('PC', 'PC.q', 'IMem.A'),
   w('PC', [145, 330], 'AddPC4.a', { via: [[145, 485]], noLabel: true, dotStart: true }),
   w('PC', [145, 440], 'AddTarget.a', { via: [[640, 440], [640, 465]], noLabel: true, dotStart: true, requires: ['PCTarget'] }),
@@ -183,7 +183,7 @@ const base: MicroarchDef = {
   id: 'riscv-single',
   name: 'Однотактный',
   chapter: 'H&H RISC-V, гл. 7.3',
-  width: 1150,
+  width: 1174,
   height: 640,
   signals,
   blocks,
@@ -199,4 +199,4 @@ const base: MicroarchDef = {
 };
 
 // место под подписи полей инструкции (между «шиной» Instr и блоками) и перед АЛУ
-export const singleCycleDef: MicroarchDef = stretchX(stretchX(base, 325, 50), 665, 30);
+export const singleCycleDef: MicroarchDef = stretchX(stretchX(stretchX(base, 60, 24), 349, 50), 689, 30);

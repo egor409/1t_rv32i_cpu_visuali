@@ -76,8 +76,9 @@ export class BlockDetail {
       }
       return t;
     };
-    const a = tbl('Входы', io.inputs);
-    const o = tbl('Выходы', io.outputs);
+    // у регистра стадий входы/выходы уже показаны таблицей «вход → выход»
+    const a = b.type === 'pipereg' ? null : tbl('Входы', io.inputs);
+    const o = b.type === 'pipereg' ? null : tbl('Выходы', io.outputs);
     if (a) this.body.append(a);
     if (o) this.body.append(o);
   }

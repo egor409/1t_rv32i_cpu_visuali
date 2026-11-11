@@ -84,7 +84,7 @@ function anim(attr: string, values: string, keyTimes: string, dur: number) {
   return s('animate', { attributeName: attr, values, keyTimes, dur: `${dur}s`, repeatCount: 'indefinite', calcMode: 'discrete' });
 }
 
-const note = (t: string, cls = '') => h('div', { class: `a-note ${cls}`, text: t });
+const note = (t: string, cls = '') => h('div', { class: `a-note${cls ? ' n-' + cls : ''}`, text: t });
 const wrap = (...children: (Node | null)[]) => {
   const d = h('div', { class: 'a-wrap' });
   for (const ch of children) if (ch) d.append(ch);

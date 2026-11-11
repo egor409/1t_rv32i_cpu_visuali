@@ -572,6 +572,16 @@ input {
   stroke: var(--ok);
   stroke-width: 2.4;
 }
+.block.latch .shape,
+.block.stall .shape,
+.block.flush .shape {
+  animation: latch 0.9s ease-out 1;
+}
+@keyframes latch {
+  0% {
+    stroke-width: 7;
+  }
+}
 .block.stall .shape {
   fill: #ffe9b8;
   stroke: var(--warn);
@@ -592,7 +602,7 @@ input {
   fill: var(--ink);
   pointer-events: none;
 }
-.block .blabel.reg {
+.block .blabel.preg {
   font-size: 10.5px;
   fill: var(--muted);
 }
@@ -1024,14 +1034,14 @@ th.pd-c.cur {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 4px;
-  background: #f06595;
+  height: 5px;
+  background: #d6336c;
 }
 .tl-cell.m-stall::after {
-  background: #fcc419;
+  background: #f59f00;
 }
 .tl-cell.m-flush::after {
-  background: #ff6b6b;
+  background: #e03131;
 }
 .tl-track.dense .tl-cell span {
   display: none;
@@ -1072,7 +1082,7 @@ th.pd-c.cur {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 360px;
+  width: 392px;
   max-height: calc(100% - 16px);
   display: flex;
   flex-direction: column;
@@ -1306,21 +1316,21 @@ th.pd-c.cur {
   font-size: 12px;
   color: #36424e;
 }
-.a-note.dim {
+.a-note.n-dim {
   color: var(--muted);
   font-size: 11px;
 }
-.a-note.res {
+.a-note.n-res {
   font: 600 12.5px var(--mono);
   color: var(--accent);
 }
-.a-note.ok {
+.a-note.n-ok {
   color: #1c6b2c;
 }
-.a-note.warn {
+.a-note.n-warn {
   color: #8a5a00;
 }
-.a-note.bad {
+.a-note.n-bad {
   color: #a51111;
 }
 .a-cap {
@@ -1354,8 +1364,11 @@ th.pd-c.cur {
 .a-table.dec th,
 .a-table.dec td {
   text-align: center;
-  padding: 1px 2px;
-  font-size: 10.5px;
+  padding: 1px 1px;
+  font-size: 10px;
+}
+.a-table.dec th {
+  font-size: 9px;
 }
 .a-table.dec td:first-child,
 .a-table.dec th:first-child {

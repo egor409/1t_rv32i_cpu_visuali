@@ -349,7 +349,7 @@ function drawBlock(b: BlockDef): SVGGElement {
   // название
   const lines = b.label.split('\n');
   if (b.type === 'pipereg') {
-    g.append(s('text', { class: 'blabel reg', x: x + w / 2, y: y - 4, 'text-anchor': 'middle', text: b.label }));
+    g.append(s('text', { class: 'blabel preg', x: x + w / 2, y: y - 4, 'text-anchor': 'middle', text: b.label }));
   } else if (b.label) {
     const lh = 14;
     const cy = y + h / 2 - ((lines.length - 1) * lh) / 2 + 4;
