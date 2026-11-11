@@ -94,8 +94,8 @@ const mainEl = h('div', { class: 'main' });
 const narrHost = h('div', { class: 'narr-host' });
 const exitPres = h('button', { class: 'exit-pres', text: '✕ выйти из презентации', onclick: () => togglePresentation() });
 
-const side = new SidePanel();
 const pd = new PipelineDiagram((cycle) => seekCycle(cycle));
+const side = new SidePanel(pd.el);
 const player = new Player({
   seek: (i) => seek(i),
   step: (d) => seek(state.idx + d),
@@ -133,7 +133,7 @@ app.append(
   tip,
   exitPres,
 );
-center.append(schemHost, pd.el);
+center.append(schemHost);
 mainEl.append(center, side.el);
 schemHost.append(zoomBox, warnBox);
 

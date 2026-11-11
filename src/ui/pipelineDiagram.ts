@@ -16,8 +16,8 @@ export class PipelineDiagram {
       h(
         'div',
         { class: 'pd-head' },
-        h('b', { text: 'Pipeline diagram' }),
-        h('span', { class: 'pd-legend', html: '<i class="lg stall"></i> stall &nbsp; <i class="lg flush"></i> flush (инструкция отменена) &nbsp; клик по такту — перейти' }),
+        h('h3', { text: 'Pipeline diagram' }),
+        h('span', { class: 'pd-legend', html: '<i class="lg stall"></i> stall &nbsp; <i class="lg flush"></i> flush', title: 'Клик по такту — перейти к нему' }),
       ),
       h('div', { class: 'pd-scroll' }, this.table),
     );
@@ -31,7 +31,7 @@ export class PipelineDiagram {
     this.el.classList.toggle('hidden-nodata', !rows);
     if (!rows) return;
     const n = trace.cycles;
-    const head = h('tr', {}, h('th', { class: 'pd-ih', text: 'Инструкция \\ такт' }));
+    const head = h('tr', {}, h('th', { class: 'pd-ih', text: 'такт →' }));
     for (let c = 1; c <= n; c++) {
       const th = h('th', { class: 'pd-c', text: String(c), onclick: () => this.onSeekCycle(c) });
       head.append(th);

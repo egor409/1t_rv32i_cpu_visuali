@@ -13,7 +13,7 @@ export class SidePanel {
   private rows: HTMLElement[] = [];
   private regEls: HTMLElement[] = [];
 
-  constructor() {
+  constructor(extra?: HTMLElement) {
     for (let i = 0; i < 32; i++) {
       const v = h('span', { class: 'rv' });
       const cell = h('div', { class: 'reg', title: `x${i} (${abiName(i)})` }, h('span', { class: 'rn', text: `x${i}` }), v);
@@ -23,13 +23,9 @@ export class SidePanel {
     this.el = h(
       'aside',
       { class: 'side' },
-      h('h3', { text: 'Программа' }),
-      this.note,
-      this.listing,
-      h('h3', { text: 'Регистры' }),
-      this.regs,
-      h('h3', { text: 'Память данных' }),
-      this.mem,
+      h('div', { class: 'sp-prog' }, h('h3', { text: 'Программа' }), this.note, this.listing),
+      extra ?? null,
+      h('div', { class: 'sp-state' }, h('h3', { text: 'Регистры' }), this.regs, h('h3', { text: 'Память данных' }), this.mem),
     );
   }
 

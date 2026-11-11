@@ -326,7 +326,7 @@ input {
 /* ---------------- основная область ---------------- */
 .main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 27vw, 420px);
   min-height: 0;
 }
 .center {
@@ -640,7 +640,6 @@ input {
 .presentation .narr-host,
 .presentation .toolbar,
 .presentation .side,
-.presentation .pd,
 .presentation .brand small {
   display: none;
 }
@@ -652,10 +651,15 @@ input {
 .no-pipeline .pd {
   display: none;
 }
-.L-state-off .side {
+.L-state-off .sp-state {
   display: none;
 }
-.L-state-off .main,
+.L-state-off.L-pipeline-off .side,
+.L-state-off.no-pipeline .side {
+  display: none;
+}
+.L-state-off.L-pipeline-off .main,
+.L-state-off.no-pipeline .main,
 .presentation .main {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -749,7 +753,7 @@ input {
 }
 .sp-regs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 1px 8px;
   font: 11.5px var(--mono);
 }
@@ -797,27 +801,16 @@ input {
 }
 
 /* ---------------- pipeline diagram ---------------- */
-.pd {
-  border-top: 1px solid var(--line);
-  background: var(--panel);
-  max-height: 32%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
 .pd.hidden-nodata {
   display: none;
 }
 .pd-head {
-  padding: 3px 10px;
-  font-size: 12px;
   display: flex;
-  gap: 14px;
-  align-items: center;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 11.5px;
   color: var(--muted);
-}
-.pd-head b {
-  color: var(--ink);
 }
 .lg {
   display: inline-block;
@@ -835,7 +828,10 @@ input {
 }
 .pd-scroll {
   overflow: auto;
-  padding: 0 10px 6px;
+  max-height: 240px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 2px 4px 4px;
 }
 .pd-table {
   border-collapse: separate;
@@ -856,7 +852,11 @@ input {
 }
 .pd-i {
   white-space: nowrap;
-  padding-right: 10px;
+  padding-right: 8px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 1;
   position: sticky;
   left: 0;
   background: var(--panel);
@@ -869,9 +869,9 @@ input {
   margin-right: 6px;
 }
 .pd-c {
-  width: 26px;
-  min-width: 26px;
-  height: 20px;
+  width: 22px;
+  min-width: 22px;
+  height: 19px;
   text-align: center;
   cursor: pointer;
   border-radius: 3px;
@@ -1205,9 +1205,6 @@ th.pd-c.cur {
 }
 
 @media (max-width: 1100px) {
-  .main {
-    grid-template-columns: minmax(0, 1fr) 220px;
-  }
   .narr {
     grid-template-columns: 1fr;
     height: auto;
