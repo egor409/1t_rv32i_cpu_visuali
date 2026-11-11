@@ -70,5 +70,12 @@ export function blockIO(def: MicroarchDef): Map<string, BlockIO> {
       push(io.get(b)!.inputs, p, w.signal);
     }
   }
+  // порядок — как порты объявлены в блоке
+  for (const b of def.blocks) {
+    const order = (port: string) => b.ports.findIndex((p) => p.id === port);
+    const x = io.get(b.id)!;
+    x.inputs.sort((p, q) => order(p.port) - order(q.port));
+    x.outputs.sort((p, q) => order(p.port) - order(q.port));
+  }
   return io;
 }
