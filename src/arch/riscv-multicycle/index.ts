@@ -8,7 +8,7 @@ import type { ArchModule, MicroarchDef } from '../../core/types';
 
 const def: MicroarchDef = {
   id: 'riscv-multicycle',
-  name: 'Многотактный (multicycle)',
+  name: 'Многотактный',
   chapter: 'H&H RISC-V, гл. 7.4',
   width: 900,
   height: 360,

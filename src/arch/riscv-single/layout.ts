@@ -3,7 +3,7 @@
  * Компоновка собственная (не копия рисунка книги); имена сигналов — как в книге.
  */
 import type { MicroarchDef, SignalDef } from '../../core/types';
-import { block, mux2, mux3, port, sig, wireFactory } from '../dsl';
+import { block, mux2, mux3, port, sig, stretchX, wireFactory } from '../dsl';
 
 const D32 = () => sig(32);
 const C = (w: number, extra: Partial<SignalDef> = {}) => sig(w, 'control', { fmt: 'bin', ...extra });
@@ -147,7 +147,7 @@ const wires = [
   w('PCPlus4', 'AddPC4.y', [245, 505], { labelDx: 22 }),
   w('PCPlus4', [245, 505], 'PCMux.in0', { via: [[245, 585], [8, 585], [8, 310]], when: { signal: 'PCSrc', value: 0 }, noLabel: true }),
   w('PCPlus4', [245, 585], 'ResultMux.in2', { via: [[950, 585], [950, 370]], when: { signal: 'ResultSrc', value: 2 }, requires: ['Result'], noLabel: true, dotStart: true }),
-  w('Instr', 'IMem.RD', [TR, 330]),
+  w('Instr', 'IMem.RD', [TR, 330], { labelDy: 16, labelDx: 2 }),
   w('op', [TR, 330], 'Control.op', { via: [[TR, 80]], labelSeg: -1 }),
   w('funct3', [TR, 330], 'Control.funct3', { via: [[TR, 110]], labelSeg: -1, dotStart: true }),
   w('funct7b5', [TR, 330], 'Control.funct7b5', { via: [[TR, 140]], labelSeg: -1 }),
@@ -179,11 +179,11 @@ const wires = [
   w('RegWrite', 'Control.RegWrite', 'RF.WE3', { via: [[495, 170]], labelSeg: 1 }),
 ];
 
-export const singleCycleDef: MicroarchDef = {
+const base: MicroarchDef = {
   id: 'riscv-single',
-  name: 'Однотактный (single-cycle)',
+  name: 'Однотактный',
   chapter: 'H&H RISC-V, гл. 7.3',
-  width: 1070,
+  width: 1150,
   height: 640,
   signals,
   blocks,
@@ -197,3 +197,6 @@ export const singleCycleDef: MicroarchDef = {
   ],
   notes: [{ x: 156, y: 529, text: '4', cls: 'const' }],
 };
+
+// место под подписи полей инструкции (между «шиной» Instr и блоками) и перед АЛУ
+export const singleCycleDef: MicroarchDef = stretchX(stretchX(base, 325, 50), 665, 30);
