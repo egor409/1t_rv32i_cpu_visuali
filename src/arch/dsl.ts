@@ -1,0 +1,72 @@
+/** Маленький DSL для декларативного описания схем (блоки, порты, провода). */
+import type { BlockDef, BlockType, PortDef, Side, SignalDef, SignalKind, WireDef, WireEnd } from '../core/types';
+
+export const port = (id: string, side: Side, off: number, label?: string): PortDef => ({ id, side, off, label });
+
+export function block(
+  id: string,
+  type: BlockType,
+  label: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  ports: PortDef[],
+  extra: Partial<BlockDef> = {},
+): BlockDef {
+  return { id, type, label, x, y, w, h, ports, ...extra };
+}
+
+type WireOpts = Omit<WireDef, 'id' | 'signal' | 'from' | 'to'>;
+
+/** Счётчик для автоматических id проводов одного сигнала. */
+export function wireFactory() {
+  const seen = new Map<string, number>();
+  return function wire(signal: string, from: WireEnd, to: WireEnd, opts: WireOpts = {}): WireDef {
+    const n = (seen.get(signal) ?? 0) + 1;
+    seen.set(signal, n);
+    return { id: n === 1 ? signal : `${signal}#${n}`, signal, from, to, ...opts };
+  };
+}
+
+export const sig = (width: number, kind: SignalKind = 'data', extra: Partial<SignalDef> = {}): SignalDef => ({
+  width,
+  kind,
+  ...extra,
+});
+
+/** 2-входовый мультиплексор: порты in0, in1, sel (сверху или снизу), out. */
+export function mux2(id: string, x: number, y: number, extra: Partial<BlockDef> = {}, selSide: Side = 't'): BlockDef {
+  return block(id, 'mux', '', x, y, 22, 80, [port('in0', 'l', 20, '0'), port('in1', 'l', 60, '1'), port('sel', selSide, 11), port('out', 'r', 40)], extra);
+}
+
+/** 3-входовый мультиплексор высотой h. */
+export function mux3(id: string, x: number, y: number, h: number, offs: [number, number, number], extra: Partial<BlockDef> = {}, selSide: Side = 't'): BlockDef {
+  return block(
+    id,
+    'mux',
+    '',
+    x,
+    y,
+    22,
+    h,
+    [port('in0', 'l', offs[0], '00'), port('in1', 'l', offs[1], '01'), port('in2', 'l', offs[2], '10'), port('sel', selSide, 11), port('out', 'r', h / 2)],
+    extra,
+  );
+}
+
+/**
+ * «Раздвинуть» схему: всё, что правее x0, сдвигается на dx (блоки, точки проводов, подписи).
+ * Удобно, когда в готовой компоновке нужно добавить место под подписи.
+ */
+export function stretchX<T extends { blocks: BlockDef[]; wires: WireDef[]; notes?: { x: number }[] }>(def: T, x0: number, dx: number): T {
+  const sx = (x: number) => (x > x0 ? x + dx : x);
+  for (const b of def.blocks) b.x = sx(b.x);
+  for (const w of def.wires) {
+    if (typeof w.from !== 'string') w.from = [sx(w.from[0]), w.from[1]];
+    if (typeof w.to !== 'string') w.to = [sx(w.to[0]), w.to[1]];
+    if (w.via) w.via = w.via.map(([x, y]) => [sx(x), y]);
+  }
+  for (const n of def.notes ?? []) n.x = sx(n.x);
+  return def;
+}
