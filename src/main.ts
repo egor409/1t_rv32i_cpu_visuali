@@ -7,6 +7,7 @@ import { BlockDetail } from './ui/blockDetail';
 import { clear, h } from './ui/dom';
 import { Editor } from './ui/editor';
 import { fmtFull, type NumFmt } from './ui/format';
+import { KidApp, TOY_ICON } from './ui/kid/kidApp';
 import { Narration } from './ui/narration';
 import { PipelineDiagram } from './ui/pipelineDiagram';
 import { Schematic } from './ui/schematic';
@@ -45,6 +46,7 @@ function loadSaved(): Saved {
 
 const saved = loadSaved();
 const hash = new URLSearchParams(location.hash.slice(1));
+const startKid = location.hash === '#kid';
 
 const state = {
   arch: archById(hash.get('a') ?? 'riscv-single') as ArchModule,
@@ -80,6 +82,27 @@ const fmtBtn = h('button', { class: 'btn', title: 'Формат чисел: hex 
 const presBtn = h('button', { class: 'btn', title: 'Режим «презентация»: скрыть все пояснения и панели (P)', html: '<span class="narrow">⛶</span><span class="wide">Презентация</span>', onclick: () => togglePresentation() });
 const editBtn = h('button', { class: 'btn', title: 'Своя программа', html: '✎<span class="wide"> Своя программа</span>', onclick: () => editor.open(state.customSource ?? state.program?.source ?? '') });
 const layerBox = h('div', { class: 'layers' });
+
+/* упрощённая версия «Просто»: отдельный экран, создаётся при первом открытии */
+const kidRoot = h('div', { id: 'kid' });
+document.body.append(kidRoot);
+let kid: KidApp | null = null;
+function setKidMode(on: boolean) {
+  if (on) {
+    setPlaying(false);
+    if (!kid) {
+      kid = new KidApp(() => setKidMode(false));
+      kidRoot.append(kid.el);
+    }
+  }
+  kid?.setActive(on);
+  document.body.classList.toggle('kid-mode', on);
+  if (on) {
+    history.replaceState(null, '', '#kid');
+    window.scrollTo(0, 0);
+  } else render();
+}
+const kidBtn = h('button', { class: 'kid-btn', title: 'Простое объяснение конвейера — для тех, кто видит это впервые', html: `${TOY_ICON}<span>Просто</span>`, onclick: () => setKidMode(true) });
 // кнопки только для узких экранов: слои и панель состояния прячутся, чтобы схеме хватало места
 const layersBtn = h('button', { class: 'btn narrow', text: 'Слои', onclick: () => layersBtn.classList.toggle('active', app.classList.toggle('show-layers')) });
 const sideBtn = h('button', { class: 'btn narrow', text: '☰', title: 'Программа, pipeline diagram, регистры, память', onclick: () => toggleSide() });
@@ -135,6 +158,7 @@ app.append(
     'header',
     { class: 'topbar' },
     h('div', { class: 'brand' }, h('b', { text: 'RISC-V' }), h('span', { text: ' микроархитектура' }), h('small', { text: 'Harris & Harris, гл. 7' })),
+    kidBtn,
     archBtns,
     h('div', { class: 'prog' }, h('span', { class: 'cap', text: 'Программа:' }), progSel, editBtn),
     h('div', { class: 'spacer' }),
@@ -373,6 +397,7 @@ function showTip(info: { kind: 'block' | 'signal'; id: string } | null, ev: Mous
 }
 
 window.addEventListener('keydown', (ev) => {
+  if (document.body.classList.contains('kid-mode')) return;
   const t = ev.target as HTMLElement;
   if (t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || (t.tagName === 'INPUT' && (t as HTMLInputElement).type !== 'checkbox' && (t as HTMLInputElement).type !== 'range')) return;
   switch (ev.key) {
@@ -445,4 +470,5 @@ applyLayers();
   }
   const s0 = Number(hash.get('s') ?? 0);
   if (s0) seek(s0);
+  if (startKid) setKidMode(true);
 }
