@@ -1,0 +1,445 @@
+/* Экран «Просто»: мягкий, яркий, дружелюбный. */
+body.kid-mode {
+  overflow: auto;
+  background: #fff8ec;
+}
+body.kid-mode #app,
+body:not(.kid-mode) #kid {
+  display: none;
+}
+.kid {
+  --k-ink: #2b2d42;
+  --k-muted: #7a8196;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px clamp(10px, 2.5vw, 28px) 0;
+  color: var(--k-ink);
+  font: 15px/1.45 ui-rounded, 'SF Pro Rounded', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  background: radial-gradient(1200px 500px at 10% -10%, #ffe9c7 0%, transparent 60%), radial-gradient(1000px 500px at 100% 0%, #dcefff 0%, transparent 60%), #fff8ec;
+}
+.k-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.k-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.k-title .toy {
+  width: 34px;
+  height: 34px;
+}
+.k-back {
+  border: 0;
+  background: #fff;
+  color: var(--k-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(43, 45, 66, 0.1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.k-back:hover {
+  color: var(--k-ink);
+}
+.k-intro {
+  margin: 0;
+  max-width: 980px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 12px 18px;
+  box-shadow: 0 4px 16px rgba(43, 45, 66, 0.07);
+  font-size: clamp(14px, 1.25vw, 16.5px);
+}
+.k-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 14px;
+  align-items: start;
+  flex: 1;
+}
+.k-scene {
+  background: #fff;
+  border-radius: 26px;
+  padding: 10px;
+  box-shadow: 0 6px 22px rgba(43, 45, 66, 0.08);
+}
+.k-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 62dvh;
+  font-family: inherit;
+}
+
+/* станции */
+.k-band-bg {
+  fill: color-mix(in srgb, var(--sc) 14%, white);
+  transition: fill 0.4s;
+}
+.k-band.busy .k-band-bg {
+  fill: color-mix(in srgb, var(--sc) 26%, white);
+}
+.k-num-bg {
+  fill: var(--sc);
+}
+.k-num {
+  fill: #fff;
+  font-weight: 800;
+  font-size: 19px;
+}
+.k-name {
+  font-weight: 800;
+  font-size: 19px;
+  fill: #2b2d42;
+}
+.k-hint {
+  font-size: 12.5px;
+  fill: #6b7288;
+}
+
+/* линия данных */
+.k-wire path {
+  fill: none;
+  stroke: #d5dbe8;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.35s;
+}
+.k-wire polygon {
+  fill: #d5dbe8;
+  transition: fill 0.35s;
+}
+.k-wire.on path {
+  stroke: var(--tc);
+  stroke-dasharray: 2 12;
+  animation: k-flow 0.7s linear infinite;
+}
+.k-wire.on polygon {
+  fill: var(--tc);
+}
+@keyframes k-flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* блоки */
+.k-block rect {
+  fill: #fff;
+  stroke: #c9d1e0;
+  stroke-width: 3;
+  filter: drop-shadow(0 3px 5px rgba(43, 45, 66, 0.12));
+  transition: stroke 0.35s, fill 0.35s;
+}
+.k-block text {
+  font-weight: 800;
+  font-size: 15px;
+  fill: #2b2d42;
+  pointer-events: none;
+}
+.k-block.k-register text {
+  font-size: 12px;
+}
+.k-block.on rect {
+  stroke: var(--tc);
+  fill: color-mix(in srgb, var(--tc) 10%, white);
+}
+.k-block.k-pipereg rect {
+  fill: #e6eaf2;
+  stroke: none;
+  filter: none;
+}
+.k-block.k-pipereg.tick rect {
+  animation: k-gate 0.6s ease-out;
+}
+@keyframes k-gate {
+  0% {
+    fill: #2b2d42;
+  }
+}
+
+/* жетоны команд */
+.k-token {
+  transition: transform 0.65s cubic-bezier(0.3, 1.25, 0.5, 1), opacity 0.45s;
+}
+.k-token rect {
+  fill: var(--tc);
+  filter: drop-shadow(0 4px 6px color-mix(in srgb, var(--tc) 45%, transparent));
+}
+.k-tok-text {
+  fill: #fff;
+  font-weight: 800;
+  font-size: 15px;
+}
+.k-tok-sub {
+  fill: #2b2d42;
+  font-weight: 700;
+  font-size: 13.5px;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* карточки */
+.k-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.k-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 6px 22px rgba(43, 45, 66, 0.08);
+}
+.k-card h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--k-muted);
+}
+.k-card h3:not(:first-child) {
+  margin-top: 12px;
+}
+.k-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.k-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.k-pill {
+  background: var(--tc);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: opacity 0.3s, filter 0.3s;
+}
+.k-status {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--k-muted);
+}
+.k-row.wait .k-pill {
+  opacity: 0.38;
+}
+.k-row.done .k-pill {
+  filter: saturate(0.55);
+  opacity: 0.75;
+}
+.k-row.done .k-status {
+  color: #1f9d3f;
+}
+.k-row.run .k-status {
+  color: var(--k-ink);
+}
+.k-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.k-chip {
+  background: #f1f4fa;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5b6278;
+}
+.k-chip b {
+  color: var(--k-ink);
+  font-weight: 800;
+  margin-left: 3px;
+}
+.k-chip.chg {
+  background: #ffe066;
+  animation: k-pop 0.5s ease-out;
+}
+@keyframes k-pop {
+  0% {
+    transform: scale(1.35);
+  }
+}
+
+/* плеер */
+.k-player {
+  position: sticky;
+  bottom: 0;
+  margin: 0 calc(-1 * clamp(10px, 2.5vw, 28px));
+  padding: 10px clamp(10px, 2.5vw, 28px) calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -4px 18px rgba(43, 45, 66, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  z-index: 3;
+}
+.k-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.k-btn {
+  border: 0;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #eef1f8;
+  color: var(--k-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.2s;
+}
+.k-btn:hover {
+  background: #e1e6f2;
+}
+.k-btn:active {
+  transform: scale(0.93);
+}
+.k-play {
+  min-width: 132px;
+  background: linear-gradient(135deg, #ff9f1c, #ff6b6b);
+  color: #fff;
+  font-size: 17px;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+.k-play:hover {
+  background: linear-gradient(135deg, #ffab3d, #ff7d7d);
+}
+.k-play.playing {
+  background: linear-gradient(135deg, #3a86ff, #b565f5);
+  box-shadow: 0 4px 12px rgba(58, 134, 255, 0.4);
+}
+.k-progress {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.k-dots {
+  display: flex;
+  gap: 5px;
+}
+.k-dot {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: #e6eaf2;
+  color: #8b93a8;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+}
+.k-dot.past {
+  background: #ffd9a0;
+  color: #9a5b00;
+}
+.k-dot.cur {
+  background: #ff9f1c;
+  color: #fff;
+}
+.k-pos {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--k-muted);
+}
+
+/* кнопка входа в подробной версии */
+.kid-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 13px 5px 9px;
+  font: inherit;
+  font-weight: 700;
+  color: #7a3b00;
+  background: linear-gradient(135deg, #ffe08a, #ffc2b0);
+  box-shadow: 0 1px 4px rgba(255, 159, 28, 0.45);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.kid-btn:hover {
+  filter: brightness(1.05);
+}
+.presentation .kid-btn {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .kid {
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .k-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .k-svg {
+    max-height: none;
+  }
+  .k-scene {
+    padding: 6px;
+    border-radius: 22px;
+  }
+  .k-intro {
+    padding: 10px 14px;
+    border-radius: 18px;
+  }
+  .k-back {
+    padding: 7px 11px;
+    font-size: 12.5px;
+  }
+  .k-buttons {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .k-play {
+    flex: 1;
+  }
+  .k-progress {
+    flex-basis: 100%;
+  }
+  .k-pos {
+    text-align: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .k-token,
+  .k-wire.on path {
+    transition: none;
+    animation: none;
+  }
+}
