@@ -77,16 +77,23 @@ const app = document.getElementById('app')!;
 const archBtns = h('div', { class: 'seg' });
 const progSel = h('select', { class: 'prog-sel', title: 'Программа' });
 const fmtBtn = h('button', { class: 'btn', title: 'Формат чисел: hex / dec (H)', onclick: () => toggleFmt() });
-const presBtn = h('button', { class: 'btn', title: 'Режим «презентация»: скрыть все пояснения и панели (P)', text: 'Презентация', onclick: () => togglePresentation() });
-const editBtn = h('button', { class: 'btn', text: '✎ Своя программа', onclick: () => editor.open(state.customSource ?? state.program?.source ?? '') });
+const presBtn = h('button', { class: 'btn', title: 'Режим «презентация»: скрыть все пояснения и панели (P)', html: '<span class="narrow">⛶</span><span class="wide">Презентация</span>', onclick: () => togglePresentation() });
+const editBtn = h('button', { class: 'btn', title: 'Своя программа', html: '✎<span class="wide"> Своя программа</span>', onclick: () => editor.open(state.customSource ?? state.program?.source ?? '') });
 const layerBox = h('div', { class: 'layers' });
+// кнопки только для узких экранов: слои и панель состояния прячутся, чтобы схеме хватало места
+const layersBtn = h('button', { class: 'btn narrow', text: 'Слои', onclick: () => layersBtn.classList.toggle('active', app.classList.toggle('show-layers')) });
+const sideBtn = h('button', { class: 'btn narrow', text: '☰', title: 'Программа, pipeline diagram, регистры, память', onclick: () => toggleSide() });
+function toggleSide(force?: boolean) {
+  sideBtn.classList.toggle('active', app.classList.toggle('show-side', force));
+}
 const schemHost = h('div', { class: 'schem' });
 const zoomBox = h(
   'div',
   { class: 'zoom' },
   h('button', { text: '+', title: 'Увеличить (колесо мыши)', onclick: () => schematic?.zoom(1.25) }),
   h('button', { text: '−', title: 'Уменьшить', onclick: () => schematic?.zoom(0.8) }),
-  h('button', { text: '⤢', title: 'Вписать (двойной клик)', onclick: () => schematic?.fit() }),
+  h('button', { text: '⤢', title: 'Вписать целиком (двойной клик)', onclick: () => schematic?.fit() }),
+  h('button', { class: 'narrow', text: '↕', title: 'По высоте', onclick: () => schematic?.fitAuto() }),
 );
 const legend = h('div', {
   class: 'legend',
@@ -131,6 +138,8 @@ app.append(
     archBtns,
     h('div', { class: 'prog' }, h('span', { class: 'cap', text: 'Программа:' }), progSel, editBtn),
     h('div', { class: 'spacer' }),
+    layersBtn,
+    sideBtn,
     fmtBtn,
     presBtn,
   ),
@@ -144,6 +153,8 @@ app.append(
 );
 center.append(schemHost);
 mainEl.append(center, side.el);
+side.el.prepend(h('button', { class: 'side-x narrow', text: '× закрыть', onclick: () => toggleSide(false) }));
+window.addEventListener('pointerdown', () => tip.classList.add('hidden'));
 schemHost.append(zoomBox, warnBox);
 
 for (const a of ARCHS) {
@@ -219,6 +230,7 @@ function setArch(a: ArchModule) {
     },
     onHover: (info, ev) => showTip(info, ev),
   });
+  schematic.fitAuto();
   narration = new Narration(a.def);
   narrHost.append(narration.el);
   detail = new BlockDetail(a.def, () => schematic?.highlightBlock(null));

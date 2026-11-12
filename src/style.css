@@ -33,6 +33,7 @@ body {
 }
 #app {
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-rows: auto auto auto minmax(0, 1fr) auto;
 }
@@ -347,6 +348,7 @@ input {
   cursor: grabbing;
 }
 .schem-svg {
+  touch-action: none;
   width: 100%;
   height: 100%;
   display: block;
@@ -1605,4 +1607,277 @@ th.pd-c.cur {
 }
 .warn {
   bottom: 8px;
+}
+
+/* ================= узкие экраны (телефон) ================= */
+.narrow {
+  display: none;
+}
+@media (max-width: 820px), (max-height: 520px) {
+  .narrow {
+    display: inline-block;
+  }
+  .wide,
+  .brand span,
+  .brand small,
+  .prog .cap,
+  .legend,
+  .pl-cap,
+  .topbar .spacer {
+    display: none;
+  }
+  body {
+    font-size: 13px;
+  }
+  .topbar {
+    gap: 5px;
+    padding: 4px 6px;
+  }
+  .seg-btn {
+    padding: 6px 7px;
+  }
+  .btn {
+    padding: 6px 8px;
+  }
+  .prog {
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+  .prog-sel {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    padding: 6px 4px;
+  }
+  /* слои — по кнопке */
+  .toolbar {
+    display: none;
+  }
+  .show-layers .toolbar {
+    display: flex;
+    padding: 6px 8px;
+  }
+  .layer {
+    font-size: 13px;
+    padding: 3px 0;
+  }
+  /* пояснения — компактно, одной колонкой */
+  .narr {
+    display: block;
+    height: auto;
+    max-height: 26dvh;
+    overflow: auto;
+    padding: 5px 8px;
+  }
+  .narr-main {
+    overflow: visible;
+  }
+  .narr-what {
+    font-size: 13px;
+  }
+  .narr-stages {
+    margin-top: 5px;
+    overflow: visible;
+  }
+  .st-row {
+    flex-wrap: wrap;
+    white-space: normal;
+    gap: 2px 6px;
+  }
+  .st-tag {
+    width: 58px;
+  }
+  .st-instr {
+    min-width: 0;
+  }
+  .st-detail {
+    flex-basis: 100%;
+    white-space: normal;
+  }
+  .sc-hint {
+    display: none;
+  }
+  /* боковая панель — выезжающая снизу шторка */
+  .main,
+  .L-state-off .main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #app .side {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 68dvh;
+    z-index: 25;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    transform: translateY(105%);
+    transition: transform 0.2s ease;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #app.show-side .side {
+    transform: none;
+  }
+  .side-x {
+    display: block;
+    margin: 0 0 4px auto;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 4px;
+  }
+  .sp-listing {
+    max-height: 150px;
+  }
+  /* окно блока — на всю ширину снизу */
+  .bd {
+    left: 4px;
+    right: 4px;
+    top: auto;
+    bottom: 4px;
+    width: auto;
+    max-height: 72%;
+  }
+  .zoom button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  /* плеер: кнопки в ряд, таймлайн отдельной строкой */
+  .player {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  }
+  .pl-buttons {
+    flex: 1;
+    justify-content: space-between;
+    gap: 2px;
+  }
+  .pl-btn {
+    flex: 1;
+    width: auto;
+    height: 38px;
+    font-size: 15px;
+  }
+  .pl-btn.play {
+    flex: 1.5;
+    width: auto;
+  }
+  .pl-speed {
+    width: 56px;
+  }
+  .pl-speed-lbl {
+    width: 28px;
+  }
+  .tl-wrap {
+    order: 5;
+    flex: 1 1 100%;
+  }
+  .tl-cells {
+    height: 26px;
+  }
+  .pl-pos {
+    order: 6;
+    flex: 1 1 100%;
+    min-width: 0;
+    text-align: center;
+    font-size: 11px;
+  }
+  .presentation .topbar .narrow {
+    display: none;
+  }
+  .exit-pres {
+    top: 4px;
+    right: 4px;
+  }
+  .modal-box {
+    padding: 12px;
+  }
+  .ed-ta {
+    font-size: 16px; /* иначе iOS увеличивает страницу при фокусе */
+  }
+  .prog-sel,
+  .pl-speed {
+    font-size: 16px;
+  }
+}
+@media (max-height: 520px) {
+  /* телефон в альбомной ориентации: высоты мало */
+  .narr {
+    max-height: 30dvh;
+  }
+  .narr-stages,
+  .narr-why {
+    display: none;
+  }
+  .pl-pos {
+    display: none;
+  }
+  .tl-wrap {
+    order: 0;
+    flex: 1 1 200px;
+  }
+  .pl-buttons {
+    flex: 0 1 auto;
+  }
+  .pl-btn {
+    flex: none;
+    width: 34px;
+    height: 32px;
+  }
+  .pl-btn.play {
+    flex: none;
+    width: 44px;
+  }
+  .tl-cnum {
+    display: none;
+  }
+}
+
+/* строки сетки закреплены явно: скрытие панелей не должно сдвигать остальные */
+.topbar { grid-row: 1; }
+.toolbar { grid-row: 2; }
+.narr-host { grid-row: 3; }
+.main { grid-row: 4; }
+.player { grid-row: 5; }
+@media (max-width: 820px), (max-height: 520px) {
+  .seg { flex: 1 1 100%; }
+  .seg-btn { flex: 1; }
+  .narr { max-height: 21dvh; }
+}
+@media (max-height: 520px) {
+  .brand {
+    display: none;
+  }
+  .seg {
+    flex: 0 1 auto;
+  }
+  .seg-btn {
+    padding: 5px 7px;
+  }
+  .btn,
+  .prog-sel {
+    padding: 4px 7px;
+  }
+  .narr {
+    max-height: 17dvh;
+    padding: 3px 8px;
+  }
+  .zoom {
+    flex-direction: row;
+  }
+  .zoom button {
+    width: 32px;
+    height: 32px;
+  }
+  .player {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
 }
