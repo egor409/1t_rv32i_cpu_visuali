@@ -201,6 +201,20 @@ export class Schematic {
     return [p.x, p.y];
   }
 
+  /**
+   * Начальный вид: на широком экране — схема целиком; на узком (телефон в портретной
+   * ориентации) — по высоте, с левого края, дальше схему двигают пальцем.
+   */
+  fitAuto() {
+    const cw = this.host.clientWidth;
+    const ch = this.host.clientHeight;
+    const d = this.def;
+    if (cw > 0 && ch > 0 && cw / ch < (d.width / d.height) * 0.6) {
+      this.view = { x: 0, y: 0, w: d.height * (cw / ch), h: d.height };
+      this.applyView();
+    } else this.fit();
+  }
+
   private initPanZoom() {
     this.svg.addEventListener(
       'wheel',
@@ -211,34 +225,71 @@ export class Schematic {
       },
       { passive: false },
     );
-    let drag: { x: number; y: number; vx: number; vy: number; moved: boolean } | null = null;
+    // один указатель — панорама, два — масштаб щипком
+    const pts = new Map<number, { x: number; y: number }>();
+    let start: { x: number; y: number; vx: number; vy: number } | null = null;
+    let moved = false;
+    let pinch = 0;
+    const dist = () => {
+      const [a, b] = [...pts.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
     this.svg.addEventListener('pointerdown', (ev) => {
-      if (ev.button !== 0) return;
-      drag = { x: ev.clientX, y: ev.clientY, vx: this.view.x, vy: this.view.y, moved: false };
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (pts.size === 1) {
+        start = { x: ev.clientX, y: ev.clientY, vx: this.view.x, vy: this.view.y };
+        moved = false;
+      } else if (pts.size === 2) {
+        pinch = dist();
+        moved = true;
+        start = null;
+      }
     });
     window.addEventListener('pointermove', (ev) => {
-      if (!drag) return;
-      const dx = ev.clientX - drag.x;
-      const dy = ev.clientY - drag.y;
-      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
-      drag.moved = true;
+      if (!pts.has(ev.pointerId)) return;
+      pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (pts.size === 2) {
+        const d = dist();
+        if (pinch > 0 && d > 0) {
+          const [a, b] = [...pts.values()];
+          const [cx, cy] = this.toSvg({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 } as MouseEvent);
+          this.zoom(d / pinch, cx, cy);
+        }
+        pinch = d;
+        return;
+      }
+      if (!start) return;
+      const dx = ev.clientX - start.x;
+      const dy = ev.clientY - start.y;
+      if (!moved && Math.hypot(dx, dy) < 6) return;
+      moved = true;
       this.host.classList.add('panning');
       const m = this.svg.getScreenCTM();
       const k = m ? 1 / m.a : 1;
-      this.view.x = drag.vx - dx * k;
-      this.view.y = drag.vy - dy * k;
+      this.view.x = start.vx - dx * k;
+      this.view.y = start.vy - dy * k;
       this.applyView();
     });
-    window.addEventListener('pointerup', () => {
-      if (drag?.moved) {
+    const up = (ev: PointerEvent) => {
+      if (!pts.delete(ev.pointerId)) return;
+      if (pts.size === 1) {
+        // после щипка остался один палец — продолжаем панораму с текущего места
+        const p = [...pts.values()][0];
+        start = { x: p.x, y: p.y, vx: this.view.x, vy: this.view.y };
+        return;
+      }
+      if (moved) {
         // подавить click после перетаскивания
         const stop = (e: Event) => e.stopPropagation();
         this.svg.addEventListener('click', stop, { capture: true, once: true });
         setTimeout(() => this.svg.removeEventListener('click', stop, { capture: true }), 0);
       }
-      drag = null;
+      start = null;
       this.host.classList.remove('panning');
-    });
+    };
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
     this.svg.addEventListener('dblclick', (ev) => {
       if ((ev.target as Element).closest('.block')) return;
       this.fit();
