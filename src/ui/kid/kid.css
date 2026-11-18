@@ -50,6 +50,15 @@ body:not(.kid-mode) #kid {
   cursor: pointer;
   white-space: nowrap;
 }
+.k-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+a.k-back {
+  text-decoration: none;
+}
 .k-back:hover {
   color: var(--k-ink);
 }

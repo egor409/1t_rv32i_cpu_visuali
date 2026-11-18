@@ -8,7 +8,10 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "godot:data": "vite-node scripts/export-godot-data.ts",
+    "godot:fetch": "python3 scripts/fetch-godot.py",
+    "godot:build": "npm run godot:data && mkdir -p public/godot && .godot-bin/godot --headless --path godot --export-release Web"
   },
   "devDependencies": {
     "typescript": "5.8.3",

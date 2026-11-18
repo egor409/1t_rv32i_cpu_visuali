@@ -208,7 +208,12 @@ export class KidApp {
         'header',
         { class: 'k-top' },
         h('div', { class: 'k-title', html: `${TOY_ICON}<span>Процессор-конвейер</span>` }),
-        h('button', { class: 'k-back', text: 'Подробная версия →', onclick: onExit }),
+        h(
+          'div',
+          { class: 'k-links' },
+          h('a', { class: 'k-back', href: './godot/', title: 'Та же схема, сделанная на игровом движке Godot', text: '🎮 Godot-версия' }),
+          h('button', { class: 'k-back', text: 'Подробная версия →', onclick: onExit }),
+        ),
       ),
       h('p', {
         class: 'k-intro',
