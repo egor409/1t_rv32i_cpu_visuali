@@ -1,0 +1,29 @@
+; Godot-версия упрощённого визуализатора конвейера.
+; Данные (схемы и трассы) готовит TypeScript-движок: npm run godot:data
+
+config_version=5
+
+[application]
+
+config/name="Конвейер RISC-V — просто"
+config/description="Пять станций 5-стадийного конвейера: команды едут одна за другой."
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+boot_splash/bg_color=Color(1, 0.973, 0.925, 1)
+boot_splash/show_image=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=780
+window/dpi/allow_hidpi=true
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(1, 0.973, 0.925, 1)
